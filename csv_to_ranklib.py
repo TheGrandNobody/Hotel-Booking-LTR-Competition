@@ -63,9 +63,8 @@ def convert_csv_to_ranklib(input_csv: str, output_ranklib: str) -> None:
             feature_idx = 1
             for key, value in row.items():
                 if key not in ['srch_id', 'booking_bool', 'click_bool']:
-                    ranklib_line += f" {feature_idx}:{remove_leading_zeroes(value)}"
+                    ranklib_line += f" {feature_idx}:{remove_leading_zeroes(value)}\n"
                     feature_idx += 1
-            ranklib_line += '\n'
 
             # Write the RankLib line to the output file
             ranklibfile.write(ranklib_line)
