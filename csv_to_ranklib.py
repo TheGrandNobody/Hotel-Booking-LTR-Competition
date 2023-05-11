@@ -35,7 +35,13 @@ def assign_relevance_label(booking_bool: str, click_bool: str) -> str:
     else:
         return '0'
 
-def convert_csv_to_ranklib(input_csv, output_ranklib):
+def convert_csv_to_ranklib(input_csv: str, output_ranklib: str) -> None:
+    """ Converts a csv data file to a RankLib file.
+
+    Args:
+        input_csv (str): The path to the input CSV file.
+        output_ranklib (str): The name of the output RankLib file.
+    """
     # Open input CSV file for reading and output RankLib file for writing
     with open(input_csv, 'r') as csvfile, open(output_ranklib, 'w') as ranklibfile:
         # Create a CSV reader with a dictionary interface
