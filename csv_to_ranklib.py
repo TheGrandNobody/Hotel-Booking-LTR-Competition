@@ -1,26 +1,64 @@
 import csv
 import sys
 
+def remove_leading_zeroes(value: str) -> str:
+    """ Removes leading zeroes from numbers in a string.
+
+    Args:
+        value (str): The numerical value to remove leading zeroes from.
+
+    Returns:
+        str: The value with leading zeroes removed.
+    """
+    try:
+        # Try to convert the value to a number and then back to a string
+        return str(float(value)) if '.' in value else str(int(value))
+    except ValueError:
+        # If the value cannot be converted to a number, return it unchanged
+        return value
+
+def assign_relevance_label(booking_bool: str, click_bool: str) -> str:
+    """ 
+
+    Args:
+        booking_bool (str): The booking_bool value for the row.
+        click_bool (str): The click_bool value for the row.
+
+    Returns:
+        str: The relevance label for the row.
+    """
+    # Assign relevance labels based on booking_bool and click_bool values
+    if booking_bool == '1':
+        return '5'
+    elif click_bool == '1':
+        return '1'
+    else:
+        return '0'
+
 def convert_csv_to_ranklib(input_csv, output_ranklib):
     # Open input CSV file for reading and output RankLib file for writing
     with open(input_csv, 'r') as csvfile, open(output_ranklib, 'w') as ranklibfile:
-        # Create a CSV reader
-        reader = csv.reader(csvfile)
-        header = next(reader)  # Skip header row
-
+        # Create a CSV reader with a dictionary interface
+        reader = csv.DictReader(csvfile)
         # Iterate through each row in the CSV file
         for row in reader:
-            # Extract the relevance label, query ID, and feature values from the row
-            relevance_label = row[0]
-            query_id = row[1]
-            features = row[2:]
+            # Extract the search ID, booking_bool, and click_bool values from the row
+            srch_id = row['srch_id']
+            booking_bool = row['booking_bool']
+            click_bool = row['click_bool']
+
+            # Assign a relevance label based on the booking_bool and click_bool values
+            relevance_label = assign_relevance_label(booking_bool, click_bool)
 
             # Start building the RankLib line with the relevance label and query ID
-            ranklib_line = f"{relevance_label} qid:{query_id}"
+            ranklib_line = f"{relevance_label} qid:{srch_id}"
 
             # Add the feature values to the RankLib line with their indices
-            for i, feature_value in enumerate(features, start=1):
-                ranklib_line += f" {i}:{feature_value}"
+            feature_idx = 1
+            for key, value in row.items():
+                if key not in ['srch_id', 'booking_bool', 'click_bool']:
+                    ranklib_line += f" {feature_idx}:{remove_leading_zeroes(value)}"
+                    feature_idx += 1
             ranklib_line += '\n'
 
             # Write the RankLib line to the output file
