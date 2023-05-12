@@ -7,7 +7,7 @@ python3 csv_to_ranklib.py INPUT_FILE_NAME.csv OUTPUT_FILE_NAME.txt
 ```
 
 ## Training
-Then you may initiate training. Using default parameters, this would be done as follows:
+Then you may initiate training. Using default parameters, a training file `train.txt` and a validation file `valid.txt` this would be done as follows:
 ```
 java -jar RankLib-2.18.jar -train train.txt -validate -valid.txt -ranker 6 -metric2t NDCG@5 -save model.txt
 ```
