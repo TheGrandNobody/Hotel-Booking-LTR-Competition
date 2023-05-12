@@ -11,6 +11,8 @@ Then you may initiate training. Using default parameters, this would be done as 
 ```
 java -jar RankLib-2.18.jar -train train.txt -validate -valid.txt -ranker 6 -metric2t NDCG@5 -save model.txt
 ```
+However, you'll want to tune parameters, so it's best to read further and follow the protocol below.
+
 ## Parameter Tuning with RankLib
 Some of the most important parameters are:
 
@@ -24,17 +26,26 @@ Some of the most important parameters are:
 
 - `estop` (early stopping rounds): This is the number of rounds without improvement before training is stopped early. It helps to avoid overfitting and unnecessary computation by stopping training when the model's performance on a validation set is no longer improving.
 
-### Protocol
+You can also navigate to https://sourceforge.net/p/lemur/wiki/RankLib%20How%20to%20use/ to see the full list of parameters you can add to the training process.
+
+## Protocol
+### Grid Search
 Start by performing a grid search to identify a good starting point. You might want to start wide, then narrow down the search space. For example, you could start by testing the number of trees from 100 to 1000 in increments of 100, the number of leaves from 10 to 100 in increments of 10, and the learning rate from 0.1 to 1.0 in increments of 0.1.
 
+Therefore, start with the following command and increment as needed:
 ```
 java -jar RankLib-2.18.jar -train train.txt -validate valid.txt -ranker 6 -metric2t NDCG@5 -tree 100 -leaf 10 -shrinkage 0.1 -mls 1 -estop 100 -save model.txt
 ```
-
-Otherwise, navigate to https://sourceforge.net/p/lemur/wiki/RankLib%20How%20to%20use/ to see the full list of parameters you can add to the training process.
+### K-fold Cross Validation
+Once that is done, and you think you have somewhat good parameters, move on to k-fold cross validation, whill help determine performance on unseen data. You can use the following command to perform k-fold cross validation, with `-kcv 5` corresponding to the number folds you want to use:
+```
+java -jar RankLib.jar -train train.txt -ranker 6 -tree 500 -leaf 10 -shrinkage 0.1 -mls 1 -estop 50 -kcv 5 -kcvmd models/ -kcvmn performance.txt
+```
+### Fine-tuning
+Finally, you can fine-tune by performing a more detailed grid search around the earlier parameters you found that worked well. For example, if you found that 500 trees and 50 leaves give the best results, you could then test the number of trees from 400 to 600 in increments of 20, and the number of leaves from 40 to 60 in increments of 2.
 
 ## Testing
-Finally, you may test the model's performance using:
+After training, you may test the model's performance using:
 ```
 java -jar RankLib-2.18.jar -load model.txt -test test.txt -metric2T NDCG@5 -idv performance.txt
 ```
