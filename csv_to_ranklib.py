@@ -1,5 +1,4 @@
-import csv
-import sys
+import random, sys, csv
 
 def remove_leading_zeroes(value: str) -> str:
     """ Removes leading zeroes from numbers in a string.
@@ -70,6 +69,37 @@ def convert_csv_to_ranklib(input_csv: str, output_ranklib: str) -> None:
             # Write the RankLib line to the output file
             ranklibfile.write(ranklib_line)
 
+def split_data(input_file: str, output_train: str, output_valid: str, valid_ratio: float) -> None:
+    """ Randomly split a dataset in RankLib format into a training and validation file based on a given percentage.
+
+    Args:
+        input_file (str): The name of the input dataset in RankLib format.
+        output_train (str): The name of the output training file.
+        output_valid (str): The name of the output validation file.
+        valid_ratio (float): The percentage of the dataset we would like to use as validation data.
+    """
+    # Open the input file and read all the lines
+    with open(input_file, 'r') as datafile:
+        lines = datafile.readlines()
+    
+    # Shuffle the lines randomly
+    random.shuffle(lines)
+
+    # Calculate the number of lines for the validation set
+    valid_size = int(len(lines) * valid_ratio)
+
+    # Split the lines into validation and training sets
+    valid_lines = lines[:valid_size]
+    train_lines = lines[valid_size:]
+
+    # Write the training lines into the output training file
+    with open(output_train, 'w') as trainfile:
+        trainfile.writelines(train_lines)
+
+    # Write the validation lines into the output validation file
+    with open(output_valid, 'w') as validfile:
+        validfile.writelines(valid_lines)
+
 if __name__ == "__main__":
     # Check if the correct number of command-line arguments are provided
     if len(sys.argv) != 3:
@@ -80,5 +110,8 @@ if __name__ == "__main__":
     input_csv = sys.argv[1]
     output_ranklib = sys.argv[2]
 
-    # Call the convert_csv_to_ranklib function to perform the conversion
-    convert_csv_to_ranklib(input_csv, output_ranklib)
+    # Convert the input CSV file to a RankLib file
+    convert_csv_to_ranklib(input_csv, "temp.txt")
+
+    # Take a random 10% sample of the train file and turn it into a validation file
+    split_data('temp.txt', output_ranklib, 'valid.txt', 0.1)
