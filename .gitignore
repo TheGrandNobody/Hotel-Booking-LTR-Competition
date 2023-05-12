@@ -1,4 +1,8 @@
 train.txt
 input.csv
+input2.csv
 temp.txt
 valid.txt
+model.txt
+test.txt
+scores.txt

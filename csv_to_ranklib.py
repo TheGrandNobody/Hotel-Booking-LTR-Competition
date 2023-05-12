@@ -1,4 +1,4 @@
-import random, sys, csv
+import sys, csv
 
 def remove_leading_zeroes(value: str) -> str:
     """ Removes leading zeroes from numbers in a string.
@@ -49,28 +49,30 @@ def convert_csv_to_ranklib(input_csv: str, output_ranklib: str) -> None:
         for row in reader:
             # Extract the search ID, booking_bool, and click_bool values from the row
             srch_id = row['srch_id']
-            booking_bool = row['booking_bool']
-            click_bool = row['click_bool']
 
-            # Assign a relevance label based on the booking_bool and click_bool values
-            relevance_label = assign_relevance_label(booking_bool, click_bool)
+            # Create a copy of the row dictionary and remove the query id
+            features = dict(row)
+            del features['srch_id']
 
-            # Start building the RankLib line with the relevance label and query ID
-            ranklib_line = f"{relevance_label} qid:{srch_id}"
+            if output_ranklib == 'temp.txt':
+                # Assign a relevance label based on the booking_bool and click_bool values
+                relevance_label = assign_relevance_label(row['booking_bool'], row['click_bool'])
+                # Start building the RankLib line with the relevance label and query ID
+                ranklib_line = f"{relevance_label} qid:{srch_id}"
+                del features['booking_bool']
+                del features['click_bool']
+                del features['position']
+            else:
+                ranklib_line = f"0 qid:{srch_id}"
 
-            # Add the feature values to the RankLib line with their indices
-            feature_idx = 1
-            for key, value in row.items():
-                if key not in ['srch_id', 'booking_bool', 'click_bool', 'date_time']:
-                    ranklib_line += f" {feature_idx}:{remove_leading_zeroes(value)}"
-                    feature_idx += 1
-            ranklib_line += '\n'
+            # Create a string for the features in the format "index:value", removing leading zeros from the feature values
+            features_str = ' '.join(f'{i+1}:{remove_leading_zeroes(v)}' for i, (k, v) in enumerate(features.items()))
 
             # Write the RankLib line to the output file
-            ranklibfile.write(ranklib_line)
+            ranklibfile.write(f"{ranklib_line} {features_str}\n")
 
 def split_data(input_file: str, output_train: str, output_valid: str, valid_ratio: float) -> None:
-    """ Randomly split a dataset in RankLib format into a training and validation file based on a given percentage.
+    """ Split a dataset in RankLib format into a training and validation file based on a given percentage.
 
     Args:
         input_file (str): The name of the input dataset in RankLib format.
@@ -81,9 +83,6 @@ def split_data(input_file: str, output_train: str, output_valid: str, valid_rati
     # Open the input file and read all the lines
     with open(input_file, 'r') as datafile:
         lines = datafile.readlines()
-    
-    # Shuffle the lines randomly
-    random.shuffle(lines)
 
     # Calculate the number of lines for the validation set
     valid_size = int(len(lines) * valid_ratio)
@@ -111,7 +110,8 @@ if __name__ == "__main__":
     output_ranklib = sys.argv[2]
 
     # Convert the input CSV file to a RankLib file
-    convert_csv_to_ranklib(input_csv, "temp.txt")
-
-    # Take a random 10% sample of the train file and turn it into a validation file
-    split_data('temp.txt', output_ranklib, 'valid.txt', 0.1)
+    convert_csv_to_ranklib(input_csv, "temp.txt" if output_ranklib == 'train.txt' else output_ranklib)
+    
+    if output_ranklib == 'train.txt':
+        # Take a random 10% sample of the train file and turn it into a validation file
+        split_data('temp.txt', output_ranklib, 'valid.txt', 0.1)
