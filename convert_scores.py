@@ -4,12 +4,12 @@ import pandas as pd
 def extract_prop_id(features):
     for feature in features.split():
         index, value = feature.split(':')
-        if index == '5':
+        if index == '2':
             return int(value)
     return None
 
 # Load the scores
-scores_data = pd.read_csv('scores.txt', sep='\t', header=None, names=['srch_id', 'doc_id', 'score'])
+scores_data = pd.read_csv('score.txt', sep='\t', header=None, names=['srch_id', 'doc_id', 'score'])
 
 # Convert the scores to float
 scores_data['score'] = scores_data['score'].astype(float)

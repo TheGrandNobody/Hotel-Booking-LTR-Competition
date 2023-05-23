@@ -5,4 +5,5 @@ temp.txt
 valid.txt
 model.txt
 test.txt
-scores.txt
+score.txt
+.DS_Store
